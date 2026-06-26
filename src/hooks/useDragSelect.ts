@@ -42,7 +42,11 @@ export function useDragSelect() {
       e.preventDefault();
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
       dragging.current = true;
+      peeking.current = false;
       startPos.current = { x: e.clientX, y: e.clientY };
+
+      // A new interaction dismisses any sticky peek left from a previous long-press.
+      if (useUiStore.getState().peek != null) useUiStore.getState().setPeek(null);
 
       const additive = e.ctrlKey || e.metaKey || e.shiftKey;
       const current = useGameStore.getState().game?.selection ?? [];
@@ -97,10 +101,9 @@ export function useDragSelect() {
       dragging.current = false;
       startPos.current = null;
       cancelLongPress();
-      if (peeking.current) {
-        peeking.current = false;
-        useUiStore.getState().setPeek(null);
-      }
+      // Note: a triggered peek is intentionally NOT cleared on release — it stays
+      // pinned until the next interaction (pointer down) or Escape.
+      peeking.current = false;
       const el = e.currentTarget as HTMLElement;
       if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
     },

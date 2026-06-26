@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useGameStore } from '../state/gameStore.ts';
 import { useKeyboard } from '../hooks/useKeyboard.ts';
 import { useGameTimer } from '../hooks/useGameTimer.ts';
-import { BUILTIN_PUZZLES } from '../data/builtins.ts';
+import { initApp } from '../app/bootstrap.ts';
 import { Board } from './Board/Board.tsx';
 import { Controls } from './Controls/Controls.tsx';
 import { Timer, formatTime } from './Timer.tsx';
@@ -11,16 +11,15 @@ import styles from './GameScreen.module.css';
 export function GameScreen() {
   const game = useGameStore((s) => s.game);
   const puzzle = useGameStore((s) => s.puzzle);
-  const load = useGameStore((s) => s.load);
   const dispatch = useGameStore((s) => s.dispatch);
 
   useKeyboard();
   useGameTimer();
 
-  // Phase 2: boot straight into the first bundled puzzle (library lands in Phase 4).
+  // Seed storage and resume the last-played puzzle (or the first builtin).
   useEffect(() => {
-    if (!game) load(BUILTIN_PUZZLES[0]);
-  }, [game, load]);
+    void initApp();
+  }, []);
 
   if (!game || !puzzle) return null;
   const solved = game.status === 'solved';

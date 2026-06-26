@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import type { Mode } from '../game/types.ts';
 import { useGameStore } from '../state/gameStore.ts';
+import { useUiStore } from '../state/uiStore.ts';
 
 /**
  * Global keyboard play (FR-G6):
@@ -77,6 +78,7 @@ export function useKeyboard(): void {
         return;
       }
       if (e.key === 'Escape') {
+        useUiStore.getState().setPeek(null);
         dispatch({ type: 'clearSelection' });
       }
     };

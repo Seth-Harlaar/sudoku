@@ -2,8 +2,13 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// GitHub Pages project site serves from /<repo>/. Dev keeps the root base.
+// Override with VITE_BASE if you deploy elsewhere (custom domain, user page).
+const base = process.env.VITE_BASE ?? '/sudoku/';
+
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? base : '/',
   plugins: [
     react(),
     VitePWA({
@@ -36,4 +41,4 @@ export default defineConfig({
     globals: true,
     environment: 'node',
   },
-});
+}));

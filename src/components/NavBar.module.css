@@ -12,50 +12,73 @@
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 
+.left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .brand {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  padding: 0;
+  background: transparent;
+  border: none;
 }
 
 .brandMark {
-  font-size: 1.7rem;
+  font-size: 1.9rem;
   display: block;
 }
 
-.wordmark {
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .actions {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
-.btn {
+/* Page tabs (Library / Sudoku) */
+.tab {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   height: 38px;
   padding: 0 var(--space-3);
-  background: var(--surface);
-  color: var(--text);
-  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   transition:
     background var(--dur-fast) var(--ease),
-    border-color var(--dur-fast) var(--ease);
+    color var(--dur-fast) var(--ease);
+}
+.tab:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.tabActive {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
 }
 
-.btn:hover,
-.iconBtn:hover {
-  background: var(--surface-hover);
-  border-color: var(--border-strong);
+.tabIcon {
+  font-size: 1.15rem;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  margin: 0 var(--space-1);
+  background: var(--border);
 }
 
 .iconBtn {
@@ -64,22 +87,23 @@
   justify-content: center;
   width: 38px;
   height: 38px;
-  background: var(--surface);
-  color: var(--text);
-  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
   transition:
     background var(--dur-fast) var(--ease),
-    border-color var(--dur-fast) var(--ease);
+    color var(--dur-fast) var(--ease);
+}
+.iconBtn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
 }
 
-.btnIcon {
-  font-size: 1.2rem;
-}
-
-/* Hide the "New" text label on very narrow screens to keep the bar tidy. */
-@media (max-width: 380px) {
-  .btnLabel {
-    display: none;
+/* On very narrow screens drop the tab text, keep icons. */
+@media (max-width: 420px) {
+  .tab {
+    padding: 0 var(--space-2);
+    font-size: 0.85rem;
   }
 }
