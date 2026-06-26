@@ -1,0 +1,166 @@
+.screen {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* keep content centered & cohesive on wide screens */
+  gap: var(--space-3);
+  padding: var(--space-3);
+  overflow: hidden; /* everything fits one screen height — no scrolling */
+}
+
+.bar {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 1080px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.puzzleTitle {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+:global(.timer) {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.layout {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: 1080px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+/* Flex item that claims the leftover space (board + win overlay live here). */
+.boardWrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+}
+
+/* Inner size-container at 100%x100%: the board reads its cqw/cqh from this to fit
+   the leftover space exactly (keeps container-type off the flex item itself). */
+.boardSizer {
+  width: 100%;
+  height: 100%;
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Controls take only the height they need; the board flexes into the rest. */
+.controlsSlot {
+  flex: 0 0 auto;
+  align-self: center;
+  display: flex;
+  justify-content: center;
+}
+
+/* Win overlay */
+.win {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 17, 23, 0.55);
+  backdrop-filter: blur(2px);
+  border-radius: 4px;
+  animation: fade var(--dur-med) var(--ease);
+}
+
+.winCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+}
+
+.winTitle {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.winTime {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 1.3rem;
+  color: var(--text-muted);
+}
+
+.winBtn {
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border: none;
+  border-radius: var(--radius-md);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Wide: board and controls side by side, kept close together. */
+@media (min-width: 975px) {
+  .layout {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(var(--space-4), 4vw, 64px); /* never drifts far (<= 64px) */
+  }
+  /* Board sizes to the available height (square) instead of growing to fill
+     width, so the controls sit right beside it rather than across the screen. */
+  .boardWrap {
+    flex: 0 1 auto;
+    height: 100%;
+    aspect-ratio: 1;
+    /* leave room for the controls column so the group never overflows width */
+    max-width: calc(100% - 300px - 64px);
+  }
+  .controlsSlot {
+    align-self: center;
+  }
+}

@@ -1,0 +1,98 @@
+/* Design tokens. Dark is the default theme; light overrides below. */
+:root {
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur-fast: 120ms;
+  --dur-med: 220ms;
+
+  /* Board palette (cell highlight colors, index 0..8) */
+  --cell-color-0: #ef4444;
+  --cell-color-1: #f97316;
+  --cell-color-2: #eab308;
+  --cell-color-3: #22c55e;
+  --cell-color-4: #06b6d4;
+  --cell-color-5: #3b82f6;
+  --cell-color-6: #8b5cf6;
+  --cell-color-7: #ec4899;
+  --cell-color-8: #94a3b8;
+}
+
+/* Dark theme (default) */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0f1117;
+  --bg-elevated: #171a22;
+  --surface: #1e222c;
+  --surface-hover: #272c38;
+  --border: #2c313d;
+  --border-strong: #3a4150;
+
+  --text: #e7e9ee;
+  --text-muted: #9aa3b2;
+  --text-faint: #6b7280;
+
+  --accent: #5b8cff;
+  --accent-contrast: #ffffff;
+
+  /* thin row/col lines share the box-line color, only thinner */
+  --grid-line: #6b7790;
+  --grid-line-box: #6b7790;
+  --cell-given: #e7e9ee;
+  --cell-entered: #7fb0ff;
+  --cell-selected: rgba(91, 140, 255, 0.28);
+  --cell-peer: rgba(255, 255, 255, 0.05);
+  --cell-same: rgba(127, 176, 255, 0.16);
+  --cell-error: rgba(239, 68, 68, 0.28);
+  /* long-press peek: occurrences of the digit vs. cells it eliminates */
+  --cell-peek-same: rgba(91, 140, 255, 0.5);
+  --cell-peek-elim: rgba(91, 140, 255, 0.17);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f4f5f7;
+  --bg-elevated: #ffffff;
+  --surface: #ffffff;
+  --surface-hover: #eef0f3;
+  --border: #d9dce2;
+  --border-strong: #c2c7d0;
+
+  --text: #1a1d23;
+  --text-muted: #5b616b;
+  --text-faint: #939aa6;
+
+  --accent: #2f6bff;
+  --accent-contrast: #ffffff;
+
+  /* thin row/col lines share the box-line color, only thinner */
+  --grid-line: #3a4150;
+  --grid-line-box: #3a4150;
+  --cell-given: #1a1d23;
+  --cell-entered: #2f6bff;
+  --cell-selected: rgba(47, 107, 255, 0.18);
+  --cell-peer: rgba(0, 0, 0, 0.04);
+  --cell-same: rgba(47, 107, 255, 0.12);
+  --cell-error: rgba(239, 68, 68, 0.2);
+  /* long-press peek: occurrences of the digit vs. cells it eliminates */
+  --cell-peek-same: rgba(47, 107, 255, 0.32);
+  --cell-peek-elim: rgba(47, 107, 255, 0.12);
+}

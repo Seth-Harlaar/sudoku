@@ -1,0 +1,159 @@
+.board {
+  position: relative; /* anchors the selection SVG overlay */
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  /* Fit the square to the smaller side of the (sized) wrapper -> never scrolls. */
+  width: min(100cqw, 100cqh);
+  aspect-ratio: 1;
+  background: var(--bg-elevated);
+  border-top: 2.5px solid var(--grid-line-box);
+  border-left: 2.5px solid var(--grid-line-box);
+  border-radius: 4px;
+  touch-action: none; /* let the drag-select own the gesture */
+  user-select: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--grid-line);
+  border-bottom: 1px solid var(--grid-line);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+
+.boxRight {
+  border-right: 2.5px solid var(--grid-line-box);
+}
+.boxBottom {
+  border-bottom: 2.5px solid var(--grid-line-box);
+}
+
+/* Highlight layers (painted under the digit). */
+.sameDigit {
+  background: var(--cell-same);
+}
+/* Long-press peek: eliminated cells (lighter) and the digit's occurrences (stronger). */
+.peekElim {
+  background: var(--cell-peek-elim);
+}
+.peekSame {
+  background: var(--cell-peek-same);
+}
+.conflict .value {
+  color: #ff6b6b;
+}
+
+/* Selection outline: a single continuous SVG path traced around the selected
+   region. Drawn on the grid lines, rounded joins, no inside-corner gaps, no fill. */
+.selOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible; /* don't clip the stroke at the board edge */
+  pointer-events: none;
+  z-index: 2;
+}
+.selStroke {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3.5px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Color-mode fill sits beneath everything but the border. */
+.colorFill {
+  position: absolute;
+  inset: 0;
+  background: var(--cell-bg);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.value {
+  font-size: 6.6cqw;
+  font-weight: 500;
+  line-height: 1;
+  z-index: 1;
+}
+.given {
+  color: var(--cell-given);
+  font-weight: 600;
+}
+.entered {
+  color: var(--cell-entered);
+}
+.mistake {
+  color: #ff6b6b;
+  text-decoration: underline wavy rgba(255, 107, 107, 0.6);
+}
+
+/* Center pencil marks: small, centered, wrap as a group. */
+.center {
+  font-size: 2.7cqw;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  line-height: 1;
+  z-index: 1;
+  max-width: 92%;
+  text-align: center;
+  word-break: break-all;
+}
+
+/* Corner pencil marks: up to 8 slots around the cell edges. */
+.cornerWrap {
+  position: absolute;
+  inset: 5%;
+  z-index: 1;
+  pointer-events: none;
+}
+.cornerWrap > span {
+  position: absolute;
+  font-size: 2.7cqw;
+  line-height: 1;
+  color: var(--text-muted);
+}
+.corner_tl {
+  top: 0;
+  left: 0;
+}
+.corner_tr {
+  top: 0;
+  right: 0;
+}
+.corner_bl {
+  bottom: 0;
+  left: 0;
+}
+.corner_br {
+  bottom: 0;
+  right: 0;
+}
+.corner_tc {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.corner_bc {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.corner_cl {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+.corner_cr {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}

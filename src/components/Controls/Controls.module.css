@@ -1,0 +1,246 @@
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(82vmin, 300px);
+}
+
+/* Mode toggle — segmented control */
+.modes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.mode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: var(--space-2) var(--space-1);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-weight: 600;
+  transition:
+    background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+.mode:hover {
+  background: var(--surface-hover);
+}
+
+.modeActive {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.modeIcon {
+  font-size: 1.25rem;
+}
+
+.modeLabel {
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
+}
+
+/* Number pad — kept compact; aspect ratio < 1 trims the vertical whitespace. */
+.pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-1);
+}
+
+.key {
+  position: relative;
+  aspect-ratio: 1.45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition:
+    transform var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.key:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.key:active {
+  transform: scale(0.96);
+}
+
+.keyComplete .digit {
+  color: var(--text-faint);
+}
+
+/* The digit reflects where the current mode will place it. */
+.digit {
+  position: absolute;
+  inset: 14%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.digit[data-mode='normal'] {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.digit[data-mode='center'] {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.digit[data-mode='corner'] {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Corner mode: push the digit toward its 3x3 slot (vertical = align-items,
+   horizontal = justify-content). */
+.digit[data-mode='corner'][data-pos='tl'] {
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+.digit[data-mode='corner'][data-pos='tc'] {
+  align-items: flex-start;
+}
+.digit[data-mode='corner'][data-pos='tr'] {
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+.digit[data-mode='corner'][data-pos='ml'] {
+  justify-content: flex-start;
+}
+.digit[data-mode='corner'][data-pos='mr'] {
+  justify-content: flex-end;
+}
+.digit[data-mode='corner'][data-pos='bl'] {
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+.digit[data-mode='corner'][data-pos='bc'] {
+  align-items: flex-end;
+}
+.digit[data-mode='corner'][data-pos='br'] {
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.swatch {
+  width: 46%;
+  height: 64%;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* Action bar */
+.actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: background var(--dur-fast) var(--ease);
+}
+
+.actionIcon {
+  font-size: 1.3rem;
+}
+
+.action:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.action:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Mid widths (600-974px): controls sit below the grid as a single row:
+   [number pad] [vertical mode selector] [vertical action buttons].
+   Below 600px we fall back to the base vertical stack (modes on top of the pad,
+   action buttons below it). */
+@media (min-width: 600px) and (max-width: 974px) {
+  .controls {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2);
+    width: min(94vw, 440px);
+  }
+  .pad {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .modes {
+    order: 2;
+    flex: 0 0 auto;
+    grid-template-columns: 1fr; /* stack the four modes vertically */
+  }
+  .actions {
+    order: 3;
+    flex: 0 0 auto;
+    grid-template-columns: 1fr; /* stack the four buttons vertically */
+  }
+}
+
+/* Below 600px keep the vertical stack but make it compact so the grid gets more
+   of the screen height (shorter keys, tighter mode/action buttons). */
+@media (max-width: 599px) {
+  .controls {
+    gap: var(--space-1);
+    width: min(88vmin, 300px);
+  }
+  .key {
+    aspect-ratio: 1.95; /* wider-than-tall keys trim a lot of vertical space */
+  }
+  .digit[data-mode='normal'] {
+    font-size: 1.3rem;
+  }
+  .modes {
+    padding: 2px;
+  }
+  .mode {
+    padding: var(--space-1) 2px;
+    gap: 1px;
+  }
+  .modeIcon {
+    font-size: 1.05rem;
+  }
+  .modeLabel {
+    font-size: 0.6rem;
+  }
+  .action {
+    padding: var(--space-1);
+  }
+  .actionIcon {
+    font-size: 1.15rem;
+  }
+}
