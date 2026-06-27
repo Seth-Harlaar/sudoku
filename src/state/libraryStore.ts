@@ -24,6 +24,8 @@ export interface LibraryItem {
   source: 'catalog' | 'idb';
   /** Global catalog index (present only when `source === 'catalog'`). */
   catalogIndex?: number;
+  /** When the puzzle was added (idb puzzles only; used by the 'recent' sort). */
+  addedAt?: number;
 }
 
 export interface LibraryStatus {
@@ -43,6 +45,7 @@ export interface ImportReport {
 
 export type StatusFilter = 'all' | GameStatus;
 export type DifficultyFilter = 'all' | Difficulty;
+export type SortKey = 'default' | 'recent';
 
 interface LibraryStore {
   loading: boolean;
@@ -53,12 +56,16 @@ interface LibraryStore {
   search: string;
   difficulty: DifficultyFilter;
   status: StatusFilter;
+  sort: SortKey;
   lastImport: ImportReport | null;
 
   setSearch: (s: string) => void;
   setDifficulty: (d: DifficultyFilter) => void;
   setStatus: (s: StatusFilter) => void;
+  setSort: (s: SortKey) => void;
   load: () => Promise<void>;
+  /** Force a full rebuild of items + statuses (e.g. after an import). */
+  reload: () => Promise<void>;
   importText: (text: string) => Promise<ImportReport>;
   /** Resolve a list row to a full, playable Puzzle (lazy-loads catalog boards). */
   resolve: (item: LibraryItem) => Promise<Puzzle>;
@@ -103,6 +110,7 @@ async function buildItems(): Promise<LibraryItem[]> {
     .map((p) => ({
       id: p.id,
       source: 'idb' as const,
+      addedAt: p.addedAt,
       ...(p.clues != null ? { clues: p.clues } : {}),
       ...(p.rating != null ? { rating: p.rating } : {}),
       ...(p.difficulty ? { difficulty: p.difficulty } : {}),
@@ -128,11 +136,13 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
   search: '',
   difficulty: 'all',
   status: 'all',
+  sort: 'default',
   lastImport: null,
 
   setSearch: (search) => set({ search }),
   setDifficulty: (difficulty) => set({ difficulty }),
   setStatus: (status) => set({ status }),
+  setSort: (sort) => set({ sort }),
 
   load: async () => {
     set({ loading: true });
@@ -145,13 +155,17 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
     set({ items, statusById, loading: false });
   },
 
+  reload: async () => {
+    set({ items: [] }); // drop cached items so load() rebuilds (picks up new imports)
+    await get().load();
+  },
+
   importText: async (text) => {
     const { puzzles, skipped } = parseRadcliffeCsv(text);
     const { added, skipped: duplicates } = await importPuzzles(puzzles);
     const report: ImportReport = { added, duplicates, errors: skipped };
-    set({ lastImport: report, items: [] }); // force item rebuild to include imports
-    await get().load();
     set({ lastImport: report });
+    await get().reload();
     return report;
   },
 
@@ -171,6 +185,19 @@ export function statusOf(
   id: string,
 ): LibraryStatus {
   return statusById.get(id) ?? { status: 'new', plays: 0 };
+}
+
+/**
+ * Order items for display. 'default' keeps build order (imports/built-ins, then the
+ * catalog by ascending difficulty). 'recent' surfaces the most-recently-added puzzles
+ * first; catalog puzzles (no `addedAt`) keep their relative order behind them.
+ */
+export function sortItems(items: readonly LibraryItem[], sort: SortKey): LibraryItem[] {
+  if (sort !== 'recent') return items.slice();
+  return items
+    .map((item, i) => ({ item, i }))
+    .sort((a, b) => (b.item.addedAt ?? 0) - (a.item.addedAt ?? 0) || a.i - b.i)
+    .map((x) => x.item);
 }
 
 /** Apply the active filters/search to the items (pure view helper). */

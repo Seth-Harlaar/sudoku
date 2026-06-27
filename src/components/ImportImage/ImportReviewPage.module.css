@@ -1,0 +1,116 @@
+.page {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--space-4);
+  gap: var(--space-3);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+}
+.iconBtn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.name {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 38px;
+  padding: 0 var(--space-3);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font: inherit;
+}
+.name:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.complete {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+  height: 38px;
+  padding: 0 var(--space-4);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+.complete:disabled {
+  opacity: 0.5;
+}
+.completeIcon {
+  font-size: 1.1rem;
+}
+
+.status {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.split {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  overflow-y: auto;
+  padding-bottom: var(--space-4);
+}
+
+/* The image needs a real height when stacked so zoom/pan has room. */
+.imagePane {
+  position: relative;
+  width: 100%;
+  height: 42vh;
+  min-height: 240px;
+  flex: none;
+}
+.editorPane {
+  display: flex;
+  justify-content: center;
+}
+
+/* Desktop: compare side by side, image left, puzzle right. */
+@media (min-width: 900px) {
+  .split {
+    flex-direction: row;
+    align-items: stretch;
+    overflow: hidden;
+  }
+  .imagePane {
+    flex: 1 1 0;
+    height: auto;
+  }
+  .editorPane {
+    flex: 1 1 0;
+    overflow-y: auto;
+    align-items: flex-start;
+  }
+}

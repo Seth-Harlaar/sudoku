@@ -4,19 +4,26 @@ import { useUiStore } from '../../state/uiStore.ts';
 import { useViewStore } from '../../state/viewStore.ts';
 import {
   filterItems,
+  sortItems,
   statusOf,
   useLibraryStore,
   type DifficultyFilter,
   type LibraryItem,
+  type SortKey,
   type StatusFilter,
 } from '../../state/libraryStore.ts';
+import { useImportStore } from '../../state/importStore.ts';
 import { formatTime } from '../Timer.tsx';
-import { IconImport, IconSearch } from '../icons.tsx';
+import { IconImage, IconImport, IconSearch } from '../icons.tsx';
 import { VirtualGrid } from './VirtualGrid.tsx';
 import styles from './LibraryPage.module.css';
 
 const DIFFICULTIES: DifficultyFilter[] = ['all', 'easy', 'medium', 'hard', 'expert'];
 const STATUSES: StatusFilter[] = ['all', 'new', 'in-progress', 'solved'];
+const SORTS: { key: SortKey; label: string }[] = [
+  { key: 'default', label: 'Default order' },
+  { key: 'recent', label: 'Recently added' },
+];
 const STATUS_LABEL: Record<string, string> = {
   new: 'New',
   'in-progress': 'In progress',
@@ -35,10 +42,12 @@ export function LibraryPage() {
   const search = useLibraryStore((s) => s.search);
   const difficulty = useLibraryStore((s) => s.difficulty);
   const status = useLibraryStore((s) => s.status);
+  const sort = useLibraryStore((s) => s.sort);
   const lastImport = useLibraryStore((s) => s.lastImport);
   const setSearch = useLibraryStore((s) => s.setSearch);
   const setDifficulty = useLibraryStore((s) => s.setDifficulty);
   const setStatus = useLibraryStore((s) => s.setStatus);
+  const setSort = useLibraryStore((s) => s.setSort);
   const importText = useLibraryStore((s) => s.importText);
   const resolve = useLibraryStore((s) => s.resolve);
   const load = useLibraryStore((s) => s.load);
@@ -47,16 +56,18 @@ export function LibraryPage() {
   const currentId = useGameStore((s) => s.puzzle?.id);
   const hideMistakes = useUiStore((s) => s.hideMistakes);
   const go = useViewStore((s) => s.go);
+  const beginImageImport = useImportStore((s) => s.begin);
   const fileRef = useRef<HTMLInputElement>(null);
+  const imageRef = useRef<HTMLInputElement>(null);
 
   // Refresh statuses on mount so the page reflects the latest progress/completions.
   useEffect(() => {
     void load();
   }, [load]);
 
-  const filtered = useMemo(
-    () => filterItems(items, statusById, search, difficulty, status),
-    [items, statusById, search, difficulty, status],
+  const visible = useMemo(
+    () => sortItems(filterItems(items, statusById, search, difficulty, status), sort),
+    [items, statusById, search, difficulty, status, sort],
   );
 
   const onPickFile = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -64,6 +75,14 @@ export function LibraryPage() {
     e.target.value = '';
     if (!file) return;
     await importText(await file.text());
+  };
+
+  const onPickImage = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    void beginImageImport(file);
+    go('import');
   };
 
   const openItem = async (item: LibraryItem) => {
@@ -139,6 +158,27 @@ export function LibraryPage() {
           ))}
         </select>
 
+        <select
+          className={styles.select}
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortKey)}
+          aria-label="Sort puzzles"
+        >
+          {SORTS.map((s) => (
+            <option key={s.key} value={s.key}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+
+        <button
+          className={styles.importGhost}
+          onClick={() => imageRef.current?.click()}
+          title="Import from a screenshot"
+        >
+          <IconImage className={styles.importIcon} />
+          Import image
+        </button>
         <button className={styles.import} onClick={() => fileRef.current?.click()}>
           <IconImport className={styles.importIcon} />
           Import CSV
@@ -150,13 +190,20 @@ export function LibraryPage() {
           hidden
           onChange={onPickFile}
         />
+        <input
+          ref={imageRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={onPickImage}
+        />
       </div>
 
       <div className={styles.subbar}>
         <span className={styles.count}>
           {loading
             ? 'Loading…'
-            : `${filtered.length.toLocaleString()} puzzle${filtered.length === 1 ? '' : 's'}`}
+            : `${visible.length.toLocaleString()} puzzle${visible.length === 1 ? '' : 's'}`}
         </span>
         {lastImport && (
           <span className={styles.report}>
@@ -169,7 +216,7 @@ export function LibraryPage() {
 
       <VirtualGrid
         className={styles.scroll}
-        items={filtered}
+        items={visible}
         minColWidth={MIN_COL}
         rowHeight={CARD_HEIGHT}
         gap={GAP}

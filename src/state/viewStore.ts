@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { useLibraryStore } from './libraryStore.ts';
 import { useInProgressStore } from './inProgressStore.ts';
 
-export type Page = 'progress' | 'game' | 'library';
+export type Page = 'progress' | 'game' | 'library' | 'import';
 
 interface ViewStore {
   page: Page;

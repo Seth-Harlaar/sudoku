@@ -1,0 +1,114 @@
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: center;
+  width: 100%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 1;
+  background: var(--bg-elevated);
+  border-top: 2.5px solid var(--grid-line-box);
+  border-left: 2.5px solid var(--grid-line-box);
+  border-radius: 4px;
+  outline: none;
+  user-select: none;
+}
+.grid:focus-visible {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-right: 1px solid var(--grid-line);
+  border-bottom: 1px solid var(--grid-line);
+  background: transparent;
+  color: var(--cell-entered);
+  font-size: clamp(1rem, 6.5vw, 1.4rem);
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+.boxRight {
+  border-right: 2.5px solid var(--grid-line-box);
+}
+.boxBottom {
+  border-bottom: 2.5px solid var(--grid-line-box);
+}
+.selected {
+  background: var(--cell-same);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+/* Low-confidence OCR cells get a subtle amber wash so they're easy to scan & fix. */
+.uncertain {
+  background: rgba(234, 179, 8, 0.18);
+}
+.selected.uncertain {
+  background: rgba(234, 179, 8, 0.28);
+}
+
+.pad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 360px;
+}
+.keys {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+.key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) 0;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 1.25rem;
+  font-weight: 600;
+  transition:
+    background var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+.key:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+.key:active {
+  transform: translateY(1px);
+}
+
+.erase {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+}
+.erase:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.eraseIcon {
+  font-size: 1.1rem;
+}
