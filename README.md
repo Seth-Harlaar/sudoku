@@ -24,7 +24,7 @@ The app is configured for the project site
    npm run deploy
    ```
    This runs `predeploy` (a full build) and pushes `dist/` to the `gh-pages`
-   branch via the `gh-pages` package.
+   branch via the `gh-pages` package (`-t` includes the `.nojekyll` dotfile).
 2. One-time GitHub setup: in the repo's **Settings → Pages**, set
    **Source = Deploy from a branch**, **Branch = `gh-pages` / `root`**.
 3. Visit https://seth-harlaar.github.io/sudoku/ after Pages finishes building.

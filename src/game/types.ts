@@ -6,7 +6,10 @@ export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
 
 /** Immutable puzzle definition. `givens`/`solution` are 81-char row-major strings. */
 export interface Puzzle {
-  /** Stable id, derived from a hash of `givens` (auto-dedupes on re-import). */
+  /**
+   * Stable id. For dataset rows it's the dataset's own id; for id-less imports and
+   * built-ins it's a hash of `givens`. Either way, re-importing yields the same id.
+   */
   id: string;
   title?: string;
   author?: string;

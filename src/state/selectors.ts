@@ -75,6 +75,25 @@ export function peekHighlights(
   return { same, elim };
 }
 
+/**
+ * Per-cell bitmask (bits 1-9) of digits already placed in that cell's peers — i.e.
+ * the digits that can't legally go there. Used to flag pencil marks that are no
+ * longer possible. Filled cells get 0 (their marks aren't shown anyway).
+ */
+export function peerDigitMasks(cells: readonly Cell[]): number[] {
+  const masks = new Array<number>(cells.length).fill(0);
+  for (let i = 0; i < cells.length; i++) {
+    if (cells[i].value != null) continue;
+    let mask = 0;
+    for (const p of PEERS[i]) {
+      const v = cells[p].value;
+      if (v != null) mask |= 1 << v;
+    }
+    masks[i] = mask;
+  }
+  return masks;
+}
+
 /** Count remaining placements for each digit 1-9 (for numpad completion hints). */
 export function digitCounts(cells: readonly Cell[]): number[] {
   const counts = new Array(10).fill(0) as number[];

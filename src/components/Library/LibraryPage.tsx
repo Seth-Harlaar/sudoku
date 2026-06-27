@@ -3,16 +3,18 @@ import { useGameStore } from '../../state/gameStore.ts';
 import { useUiStore } from '../../state/uiStore.ts';
 import { useViewStore } from '../../state/viewStore.ts';
 import {
-  filterEntries,
+  filterItems,
+  statusOf,
   useLibraryStore,
   type DifficultyFilter,
+  type LibraryItem,
   type StatusFilter,
 } from '../../state/libraryStore.ts';
 import { formatTime } from '../Timer.tsx';
 import { IconImport, IconSearch } from '../icons.tsx';
+import { VirtualGrid } from './VirtualGrid.tsx';
 import styles from './LibraryPage.module.css';
 
-const MAX_VISIBLE = 300;
 const DIFFICULTIES: DifficultyFilter[] = ['all', 'easy', 'medium', 'hard', 'expert'];
 const STATUSES: StatusFilter[] = ['all', 'new', 'in-progress', 'solved'];
 const STATUS_LABEL: Record<string, string> = {
@@ -21,9 +23,15 @@ const STATUS_LABEL: Record<string, string> = {
   solved: 'Solved',
 };
 
+// Card geometry for the windowed grid (px). Kept in sync with the CSS card.
+const CARD_HEIGHT = 104;
+const MIN_COL = 200;
+const GAP = 12;
+
 export function LibraryPage() {
   const loading = useLibraryStore((s) => s.loading);
-  const entries = useLibraryStore((s) => s.entries);
+  const items = useLibraryStore((s) => s.items);
+  const statusById = useLibraryStore((s) => s.statusById);
   const search = useLibraryStore((s) => s.search);
   const difficulty = useLibraryStore((s) => s.difficulty);
   const status = useLibraryStore((s) => s.status);
@@ -32,7 +40,8 @@ export function LibraryPage() {
   const setDifficulty = useLibraryStore((s) => s.setDifficulty);
   const setStatus = useLibraryStore((s) => s.setStatus);
   const importText = useLibraryStore((s) => s.importText);
-  const refresh = useLibraryStore((s) => s.refresh);
+  const resolve = useLibraryStore((s) => s.resolve);
+  const load = useLibraryStore((s) => s.load);
 
   const open = useGameStore((s) => s.open);
   const currentId = useGameStore((s) => s.puzzle?.id);
@@ -40,14 +49,14 @@ export function LibraryPage() {
   const go = useViewStore((s) => s.go);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Refresh on mount so the page reflects the latest progress/completions.
+  // Refresh statuses on mount so the page reflects the latest progress/completions.
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    void load();
+  }, [load]);
 
   const filtered = useMemo(
-    () => filterEntries(entries, search, difficulty, status),
-    [entries, search, difficulty, status],
+    () => filterItems(items, statusById, search, difficulty, status),
+    [items, statusById, search, difficulty, status],
   );
 
   const onPickFile = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -57,12 +66,37 @@ export function LibraryPage() {
     await importText(await file.text());
   };
 
-  const openPuzzle = (id: string) => {
-    const entry = entries.find((en) => en.puzzle.id === id);
-    if (!entry) return;
+  const openItem = async (item: LibraryItem) => {
     hideMistakes();
-    void open(entry.puzzle);
+    const puzzle = await resolve(item);
+    await open(puzzle);
     go('game');
+  };
+
+  const renderCard = (item: LibraryItem) => {
+    const st = statusOf(statusById, item.id);
+    return (
+      <button
+        className={`${styles.card} ${item.id === currentId ? styles.cardCurrent : ''}`}
+        onClick={() => void openItem(item)}
+      >
+        <div className={styles.cardTop}>
+          <span className={styles.cardTitle}>
+            {item.title ?? `Puzzle ${item.id.slice(0, 8)}`}
+          </span>
+          <span className={`${styles.dot} ${styles[`dot_${st.status}`]}`} />
+        </div>
+        <div className={styles.cardMeta}>
+          {item.difficulty && <span className={styles.badge}>{item.difficulty}</span>}
+          {item.clues != null && <span className={styles.metaText}>{item.clues} clues</span>}
+        </div>
+        <div className={styles.cardStatus}>
+          {st.status === 'solved' && st.bestMs != null
+            ? `Best ${formatTime(st.bestMs)}`
+            : STATUS_LABEL[st.status]}
+        </div>
+      </button>
+    );
   };
 
   return (
@@ -122,7 +156,7 @@ export function LibraryPage() {
         <span className={styles.count}>
           {loading
             ? 'Loading…'
-            : `${filtered.length} puzzle${filtered.length === 1 ? '' : 's'}`}
+            : `${filtered.length.toLocaleString()} puzzle${filtered.length === 1 ? '' : 's'}`}
         </span>
         {lastImport && (
           <span className={styles.report}>
@@ -133,42 +167,15 @@ export function LibraryPage() {
         )}
       </div>
 
-      <ul className={styles.grid}>
-        {filtered.slice(0, MAX_VISIBLE).map((e) => (
-          <li key={e.puzzle.id}>
-            <button
-              className={`${styles.card} ${e.puzzle.id === currentId ? styles.cardCurrent : ''}`}
-              onClick={() => openPuzzle(e.puzzle.id)}
-            >
-              <div className={styles.cardTop}>
-                <span className={styles.cardTitle}>
-                  {e.puzzle.title ?? `Puzzle ${e.puzzle.id.slice(0, 6)}`}
-                </span>
-                <span className={`${styles.dot} ${styles[`dot_${e.status}`]}`} />
-              </div>
-              <div className={styles.cardMeta}>
-                {e.puzzle.difficulty && (
-                  <span className={styles.badge}>{e.puzzle.difficulty}</span>
-                )}
-                {e.puzzle.clues != null && (
-                  <span className={styles.metaText}>{e.puzzle.clues} clues</span>
-                )}
-              </div>
-              <div className={styles.cardStatus}>
-                {e.status === 'solved' && e.bestMs != null
-                  ? `Best ${formatTime(e.bestMs)}`
-                  : STATUS_LABEL[e.status]}
-              </div>
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      {filtered.length > MAX_VISIBLE && (
-        <p className={styles.more}>
-          Showing first {MAX_VISIBLE} of {filtered.length}. Refine your search to see more.
-        </p>
-      )}
+      <VirtualGrid
+        className={styles.scroll}
+        items={filtered}
+        minColWidth={MIN_COL}
+        rowHeight={CARD_HEIGHT}
+        gap={GAP}
+        itemKey={(item) => item.id}
+        renderItem={renderCard}
+      />
     </div>
   );
 }

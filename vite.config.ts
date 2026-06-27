@@ -33,7 +33,20 @@ export default defineConfig(({ command }) => ({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Precache the app shell + the light puzzle index (so the library lists
+        // offline). The chunk CSVs are big in aggregate, so cache them at runtime
+        // as puzzles are opened rather than precaching all 3.5MB up front.
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}', 'puzzles/index.json'],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => /\/puzzles\/chunk-\d+\.csv$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'puzzle-chunks',
+              expiration: { maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+        ],
       },
     }),
   ],

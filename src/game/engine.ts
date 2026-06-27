@@ -64,6 +64,19 @@ function checkSolved(cells: readonly Cell[], puzzle: Puzzle | undefined): boolea
  * Returns the next cells, or the same reference when nothing changes.
  */
 function applyInput(state: GameState, digit: number, mode: Mode): Cell[] {
+  // Color applies to ANY selected cell (clues included) — it's a highlight, not a
+  // value — and toggles off when every selected cell already has that color.
+  if (mode === 'color') {
+    const targets = state.selection;
+    if (targets.length === 0) return state.cells;
+    const colorIdx = digit - 1; // palette index 0-8
+    const allSame = targets.every((i) => state.cells[i].color === colorIdx);
+    const next = cloneCells(state.cells);
+    for (const i of targets) next[i].color = allSame ? null : colorIdx;
+    return next;
+  }
+
+  // Digits and pencil marks never touch given cells.
   const editable = state.selection.filter((i) => !state.cells[i].given);
   if (editable.length === 0) return state.cells;
 
@@ -79,13 +92,6 @@ function applyInput(state: GameState, digit: number, mode: Mode): Cell[] {
         next[i].corner = [];
       }
     }
-    return next;
-  }
-
-  if (mode === 'color') {
-    const colorIdx = digit - 1; // palette index 0-8
-    const allSame = editable.every((i) => state.cells[i].color === colorIdx);
-    for (const i of editable) next[i].color = allSame ? null : colorIdx;
     return next;
   }
 
@@ -106,26 +112,72 @@ function applyInput(state: GameState, digit: number, mode: Mode): Cell[] {
   return next;
 }
 
-/** Clear value, marks, and color from editable selected cells. */
-function applyClear(state: GameState): Cell[] {
-  const editable = state.selection.filter((i) => !state.cells[i].given);
-  if (editable.length === 0) return state.cells;
-  const anything = editable.some(
-    (i) =>
-      state.cells[i].value != null ||
-      state.cells[i].center.length > 0 ||
-      state.cells[i].corner.length > 0 ||
-      state.cells[i].color != null,
-  );
-  if (!anything) return state.cells;
+/** What a single erase removes, in fall-through priority. */
+type ClearType = 'value' | 'corner' | 'center' | 'color';
+
+/** Canonical order used to fill in the types after the current mode's own. */
+const CLEAR_ORDER: readonly ClearType[] = ['value', 'corner', 'center', 'color'];
+
+/** The erase type that matches the active input mode. */
+function clearTypeForMode(mode: Mode): ClearType {
+  switch (mode) {
+    case 'corner':
+      return 'corner';
+    case 'center':
+      return 'center';
+    case 'color':
+      return 'color';
+    default:
+      return 'value';
+  }
+}
+
+/** Does any selected cell hold erasable content of this type? (givens keep value/marks.) */
+function selectionHasType(state: GameState, type: ClearType): boolean {
+  return state.selection.some((i) => {
+    const c = state.cells[i];
+    switch (type) {
+      case 'value':
+        return !c.given && c.value != null;
+      case 'corner':
+        return !c.given && c.corner.length > 0;
+      case 'center':
+        return !c.given && c.center.length > 0;
+      case 'color':
+        return c.color != null; // color sits on any cell, clues included
+    }
+  });
+}
+
+/** Remove one type of content from every selected cell. */
+function clearType(state: GameState, type: ClearType): Cell[] {
   const next = cloneCells(state.cells);
-  for (const i of editable) {
-    next[i].value = null;
-    next[i].center = [];
-    next[i].corner = [];
-    next[i].color = null;
+  for (const i of state.selection) {
+    const c = next[i];
+    if (type === 'color') c.color = null;
+    else if (!c.given) {
+      if (type === 'value') c.value = null;
+      else if (type === 'corner') c.corner = [];
+      else c.center = [];
+    }
   }
   return next;
+}
+
+/**
+ * Erase selected cells one layer at a time. Start with the active mode's own type
+ * (value/corner/center/color); if the selection has none of that type, fall through
+ * to the remaining types in canonical order. So in center mode the first erase drops
+ * center marks, the next drops the value, then corner marks, then color.
+ */
+function applyClear(state: GameState): Cell[] {
+  if (state.selection.length === 0) return state.cells;
+  const primary = clearTypeForMode(state.mode);
+  const order = [primary, ...CLEAR_ORDER.filter((t) => t !== primary)];
+  for (const type of order) {
+    if (selectionHasType(state, type)) return clearType(state, type);
+  }
+  return state.cells; // nothing erasable in the selection
 }
 
 /** Push current cells onto the undo stack and commit a new cells layer. */

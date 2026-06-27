@@ -139,6 +139,23 @@ describe('color mode', () => {
     g = run(g, { type: 'input', digit: 4 });
     expect(g.cells[2].color).toBeNull();
   });
+
+  it('colors given (clue) cells without changing their value, and erases the color', () => {
+    let g = createGame(CLASSIC);
+    // cell 0 is a given (5).
+    g = run(
+      g,
+      { type: 'select', cells: [0] },
+      { type: 'setMode', mode: 'color' },
+      { type: 'input', digit: 2 },
+    );
+    expect(g.cells[0].color).toBe(1);
+    expect(g.cells[0].value).toBe(5); // value untouched
+
+    g = run(g, { type: 'clear' });
+    expect(g.cells[0].color).toBeNull();
+    expect(g.cells[0].value).toBe(5); // still a given
+  });
 });
 
 describe('clear', () => {
@@ -156,6 +173,53 @@ describe('clear', () => {
     g = run(g, { type: 'select', cells: [0] }, { type: 'clear' });
     expect(g.cells[0].value).toBe(5);
     expect(g.past.length).toBe(before);
+  });
+
+  it('erases the active mode type first, then falls through by type', () => {
+    let g = createGame(CLASSIC);
+    g = run(
+      g,
+      { type: 'select', cells: [2] },
+      { type: 'setMode', mode: 'center' },
+      { type: 'input', digit: 2 },
+      { type: 'input', digit: 3 },
+      { type: 'setMode', mode: 'corner' },
+      { type: 'input', digit: 5 },
+    );
+    expect(g.cells[2].center).toEqual([2, 3]);
+    expect(g.cells[2].corner).toEqual([5]);
+
+    // In center mode the first erase removes only the center marks.
+    g = run(g, { type: 'setMode', mode: 'center' }, { type: 'clear' });
+    expect(g.cells[2].center).toEqual([]);
+    expect(g.cells[2].corner).toEqual([5]);
+
+    // Next erase (still center mode, no center left) falls through to corner.
+    g = run(g, { type: 'clear' });
+    expect(g.cells[2].corner).toEqual([]);
+  });
+
+  it('keeps color while marks remain, removing it only when nothing else is left', () => {
+    let g = createGame(CLASSIC);
+    g = run(
+      g,
+      { type: 'select', cells: [2] },
+      { type: 'setMode', mode: 'center' },
+      { type: 'input', digit: 4 },
+      { type: 'setMode', mode: 'color' },
+      { type: 'input', digit: 1 }, // color index 0
+    );
+    expect(g.cells[2].center).toEqual([4]);
+    expect(g.cells[2].color).toBe(0);
+
+    // A center-mode erase drops the mark but leaves the color.
+    g = run(g, { type: 'setMode', mode: 'center' }, { type: 'clear' });
+    expect(g.cells[2].center).toEqual([]);
+    expect(g.cells[2].color).toBe(0);
+
+    // With only color left, the next erase removes it.
+    g = run(g, { type: 'clear' });
+    expect(g.cells[2].color).toBeNull();
   });
 });
 

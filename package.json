@@ -13,7 +13,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist -t true"
+    "deploy": "gh-pages -d dist -t"
   },
   "dependencies": {
     "idb": "^8.0.0",

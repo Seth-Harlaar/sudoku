@@ -136,6 +136,26 @@ export function IconDice(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+/** Sudoku — a 3x3 grid. */
+export function IconGrid(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Svg {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
+    </Svg>
+  );
+}
+
+/** In progress — a clock face. */
+export function IconClock(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Svg {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </Svg>
+  );
+}
+
 export function IconLibrary(props: SVGProps<SVGSVGElement>) {
   return (
     <Svg {...props}>

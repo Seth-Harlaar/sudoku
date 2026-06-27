@@ -3,7 +3,15 @@ import { useUiStore } from '../state/uiStore.ts';
 import { useViewStore } from '../state/viewStore.ts';
 import { useTheme } from '../hooks/useTheme.ts';
 import { BUILTIN_PUZZLES } from '../data/builtins.ts';
-import { BrandMark, IconDice, IconLibrary, IconMoon, IconSun } from './icons.tsx';
+import {
+  BrandMark,
+  IconClock,
+  IconDice,
+  IconGrid,
+  IconLibrary,
+  IconMoon,
+  IconSun,
+} from './icons.tsx';
 import styles from './NavBar.module.css';
 
 export function NavBar() {
@@ -28,7 +36,7 @@ export function NavBar() {
       <div className={styles.left}>
         <button
           className={styles.brand}
-          onClick={() => go('game')}
+          onClick={() => go('progress')}
           aria-label="Sudoku home"
         >
           <BrandMark className={styles.brandMark} />
@@ -36,19 +44,31 @@ export function NavBar() {
 
         <nav className={styles.tabs} aria-label="Main">
           <button
+            className={`${styles.tab} ${page === 'progress' ? styles.tabActive : ''}`}
+            aria-current={page === 'progress'}
+            aria-label="In progress"
+            onClick={() => go('progress')}
+          >
+            <IconClock className={styles.tabIcon} />
+            <span className={styles.tabLabel}>In progress</span>
+          </button>
+          <button
             className={`${styles.tab} ${page === 'library' ? styles.tabActive : ''}`}
             aria-current={page === 'library'}
+            aria-label="Library"
             onClick={() => go('library')}
           >
             <IconLibrary className={styles.tabIcon} />
-            Library
+            <span className={styles.tabLabel}>Library</span>
           </button>
           <button
             className={`${styles.tab} ${page === 'game' ? styles.tabActive : ''}`}
             aria-current={page === 'game'}
+            aria-label="Sudoku"
             onClick={() => go('game')}
           >
-            Sudoku
+            <IconGrid className={styles.tabIcon} />
+            <span className={styles.tabLabel}>Sudoku</span>
           </button>
         </nav>
       </div>

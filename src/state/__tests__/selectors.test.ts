@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Cell } from '../../game/types.ts';
 import { CELL_COUNT, PEERS, indexOf } from '../../game/grid.ts';
-import { peekHighlights } from '../selectors.ts';
+import { peekHighlights, peerDigitMasks } from '../selectors.ts';
 
 function emptyCells(): Cell[] {
   return Array.from({ length: CELL_COUNT }, () => ({
@@ -44,5 +44,21 @@ describe('peekHighlights', () => {
     const { same, elim } = peekHighlights(emptyCells(), 7);
     expect(same.size).toBe(0);
     expect(elim.size).toBe(0);
+  });
+});
+
+describe('peerDigitMasks', () => {
+  it('flags digits placed in a cell peers and ignores filled cells', () => {
+    const cells = emptyCells();
+    const target = indexOf(4, 4);
+    cells[indexOf(4, 0)].value = 3; // same row
+    cells[indexOf(0, 4)].value = 7; // same column
+    const masks = peerDigitMasks(cells);
+
+    expect(masks[target] & (1 << 3)).not.toBe(0); // 3 impossible
+    expect(masks[target] & (1 << 7)).not.toBe(0); // 7 impossible
+    expect(masks[target] & (1 << 5)).toBe(0); // 5 still possible
+    // A filled cell reports no mark conflicts (its marks aren't shown).
+    expect(masks[indexOf(4, 0)]).toBe(0);
   });
 });

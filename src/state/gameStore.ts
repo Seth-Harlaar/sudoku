@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Action, GameState, Puzzle } from '../game/types.ts';
 import { apply, createGame } from '../game/engine.ts';
-import { addCompletion, loadProgress, setSetting } from '../persistence/db.ts';
+import { addCompletion, loadProgress, putPuzzleIfAbsent, setSetting } from '../persistence/db.ts';
 import { scheduleSave } from '../persistence/autosave.ts';
 
 const LAST_PLAYED_KEY = 'lastPlayed';
@@ -22,6 +22,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   open: async (puzzle) => {
     const saved = await loadProgress(puzzle.id);
     set({ puzzle, game: saved ?? createGame(puzzle) });
+    // Persist the definition so progress/completions always resolve to a puzzle
+    // (base-set puzzles otherwise live only in the lazy catalog files).
+    void putPuzzleIfAbsent(puzzle);
     void setSetting(LAST_PLAYED_KEY, puzzle.id);
   },
 

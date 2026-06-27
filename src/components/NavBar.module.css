@@ -16,6 +16,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  min-width: 0; /* allow the tab row to shrink instead of overflowing */
 }
 
 .brand {
@@ -35,12 +36,14 @@
   display: flex;
   align-items: center;
   gap: var(--space-1);
+  min-width: 0;
 }
 
 .actions {
   display: flex;
   align-items: center;
   gap: var(--space-1);
+  flex: none;
 }
 
 /* Page tabs (Library / Sudoku) */
@@ -72,6 +75,11 @@
 
 .tabIcon {
   font-size: 1.15rem;
+  flex: none;
+}
+
+.tabLabel {
+  white-space: nowrap;
 }
 
 .divider {
@@ -100,10 +108,23 @@
   color: var(--text);
 }
 
-/* On very narrow screens drop the tab text, keep icons. */
-@media (max-width: 420px) {
+/* On narrow screens drop the tab text and show icon-only square tabs so the bar
+   never overflows. aria-label keeps each tab accessible. */
+@media (max-width: 560px) {
+  .nav {
+    gap: var(--space-2);
+    padding: 0 var(--space-3);
+  }
+  .left {
+    gap: var(--space-2);
+  }
+  .tabLabel {
+    display: none;
+  }
   .tab {
-    padding: 0 var(--space-2);
-    font-size: 0.85rem;
+    width: 38px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
   }
 }

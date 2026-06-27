@@ -13,7 +13,6 @@
   border-radius: 4px;
   touch-action: none; /* let the drag-select own the gesture */
   user-select: none;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
 .cell {
@@ -106,6 +105,13 @@
   max-width: 92%;
   text-align: center;
   word-break: break-all;
+}
+
+/* A pencil mark (center or corner) that's no longer possible — a peer holds it.
+   The corner selector is qualified to outrank the `.cornerWrap > span` base color. */
+.markBad,
+.cornerWrap > span.markBad {
+  color: #ff6b6b;
 }
 
 /* Corner pencil marks: up to 8 slots around the cell edges. */

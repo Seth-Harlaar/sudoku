@@ -14,6 +14,8 @@ export interface CellProps {
   peekSame: boolean;
   /** Long-press peek: this cell is eliminated by an occurrence of the digit. */
   peekElim: boolean;
+  /** Bitmask (bits 1-9) of digits placed in peers; flags impossible marks in red. */
+  peerMask: number;
 }
 
 /** Corner-mark slot order: up to 8 marks placed around the cell corners/edges. */
@@ -28,7 +30,10 @@ function CellView({
   sameDigit,
   peekSame,
   peekElim,
+  peerMask,
 }: CellProps) {
+  // A pencil mark is "impossible" when a peer already holds that digit.
+  const impossible = (d: number) => (peerMask & (1 << d)) !== 0;
   const classes = [styles.cell];
   if (isBoxRightEdge(index)) classes.push(styles.boxRight);
   if (isBoxBottomEdge(index)) classes.push(styles.boxBottom);
@@ -65,12 +70,21 @@ function CellView({
       ) : (
         <>
           {cell.center.length > 0 && (
-            <span className={styles.center}>{cell.center.join('')}</span>
+            <span className={styles.center}>
+              {cell.center.map((d) => (
+                <span key={d} className={impossible(d) ? styles.markBad : undefined}>
+                  {d}
+                </span>
+              ))}
+            </span>
           )}
           {cell.corner.length > 0 && (
             <span className={styles.cornerWrap} aria-hidden>
               {cell.corner.slice(0, 8).map((d, i) => (
-                <span key={d} className={styles[`corner_${CORNER_SLOTS[i]}`]}>
+                <span
+                  key={d}
+                  className={`${styles[`corner_${CORNER_SLOTS[i]}`]} ${impossible(d) ? styles.markBad : ''}`}
+                >
                   {d}
                 </span>
               ))}

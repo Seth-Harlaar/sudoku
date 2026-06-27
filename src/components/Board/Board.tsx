@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useGameStore } from '../../state/gameStore.ts';
 import { useUiStore } from '../../state/uiStore.ts';
-import { deriveHighlights, peekHighlights } from '../../state/selectors.ts';
+import { deriveHighlights, peekHighlights, peerDigitMasks } from '../../state/selectors.ts';
 import { useDragSelect } from '../../hooks/useDragSelect.ts';
 import { Cell } from './Cell.tsx';
 import { SelectionOverlay } from './SelectionOverlay.tsx';
@@ -28,7 +28,10 @@ export function Board() {
     [game, peek],
   );
 
-  if (!game || !highlights) return null;
+  // Bitmask per cell of peer-placed digits, to flag impossible pencil marks in red.
+  const peerMasks = useMemo(() => (game ? peerDigitMasks(game.cells) : null), [game]);
+
+  if (!game || !highlights || !peerMasks) return null;
 
   return (
     <div
@@ -48,6 +51,7 @@ export function Board() {
           sameDigit={peekSets ? false : highlights.sameDigit.has(i)}
           peekSame={peekSets?.same.has(i) ?? false}
           peekElim={peekSets?.elim.has(i) ?? false}
+          peerMask={peerMasks[i]}
         />
       ))}
       <SelectionOverlay selection={game.selection} />

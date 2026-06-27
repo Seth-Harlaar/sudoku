@@ -11,6 +11,10 @@ coverage
 .idea
 .DS_Store
 
+# Data: raw 3M source dataset + the sampling script (genesis.csv is committed)
+assets/sudoku-3m.csv
+scripts/sample_puzzles.py
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
